@@ -58,6 +58,34 @@ def parse_text():
     return_obj['tree'] = parse_obj
     return json.dumps(return_obj)
 
+import database
+
+@app.route("/store", methods=['POST'])
+def store_to_db():
+    return_obj = {'error_msg': ''}
+    obj = None
+    try: # get json obj
+        obj = request.get_json()
+    except Exception as e:
+        return_obj['error_msg'] = str(e)
+        return json.dumps(return_obj)
+    try: # get members
+        conllu = obj['conllu']
+        lang = obj['lang']
+    except Exception as e:
+        return json.dumps({'error_msg': 'Error: Request lacks property ' + str(e)})
+    if lang != 'ro':
+        return json.dumps({'error_msg': 'Error: language "' + lang + '" not implemented yet'})
+
+    filename = r'sentences_ro1.db'
+    conn = database.create_connection(filename)
+    if not conn:
+        return {'error_msg': 'Error connecting to database'}
+    id = database.insert_sentence(conn, conllu, '', '', request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+    conn.close()
+    print(id)
+    return json.dumps(return_obj)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
