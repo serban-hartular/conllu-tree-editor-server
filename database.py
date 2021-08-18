@@ -38,9 +38,9 @@ create_table_sql = """
     );
     """
 
-def insert_sentence(conn, conllu,
+def insert_sentence(conn, conllu : str,
                    meta='', tstamp='', ip='', is_conllu_correct=1, is_conllu_complete=1,
-                   ellipsis_type='', comment=''):
+                   ellipsis_type='', comment='', sentence_src = ''):
     # """
     # :param conn:
     # :param project:
@@ -51,10 +51,14 @@ def insert_sentence(conn, conllu,
     if not ip:
         ip = 'localhost'
         
-    sql = ''' INSERT INTO sentences(conllu,meta,tstamp,ip,is_conllu_correct,is_conllu_complete,ellipsis_type,comment)
-              VALUES(?,?,?,?,?,?,?,?) '''
+    sql = ''' INSERT INTO sentences(conllu,meta,tstamp,ip,is_conllu_correct,is_conllu_complete,ellipsis_type,comment,sentence_src)
+              VALUES(?,?,?,?,?,?,?,?,?) '''
     cur = conn.cursor()
-    cur.execute(sql, (conllu,meta,tstamp,ip,is_conllu_correct,is_conllu_complete,ellipsis_type,comment))
+    [conllu, ellipsis_type, comment, sentence_src] = \
+        [s.encode('utf8') for s in [conllu, ellipsis_type, comment, sentence_src]]
+    # print(conllu)
+    cur.execute(sql, (conllu,
+                      meta,tstamp,ip,is_conllu_correct,is_conllu_complete,ellipsis_type,comment,sentence_src))
     conn.commit()
     return cur.lastrowid
 
