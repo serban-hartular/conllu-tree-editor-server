@@ -2,7 +2,10 @@ from flask import Flask, send_from_directory
 from flask import request
 import json
 
-import get_nlpcube_parse
+NLPCUBE_ENABLE = True
+
+if NLPCUBE_ENABLE:
+    import get_nlpcube_parse
 import get_racai_parse
 
 app = Flask(__name__)
@@ -56,8 +59,9 @@ def parse_text():
     except Exception as e:
         return_obj['error_msg'] = 'Error: Request lacks property ' + str(e)
         return return_obj
-    parse_fns = {'nlpcube' : get_nlpcube_parse.text_to_treelist,
-                 'racai' : get_racai_parse.get_racai_parse}
+    parse_fns = {'racai' : get_racai_parse.get_racai_parse}
+    if NLPCUBE_ENABLE:
+        parse_fns['nlpcube'] = get_nlpcube_parse.text_to_treelist
     parse_obj = parse_fns[parser](text, lang)
     return_obj['tree'] = parse_obj
     return json.dumps(return_obj)
